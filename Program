@@ -1,61 +1,66 @@
 using System;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Linq;
+
 namespace Hangman_Final
 
+{
+    class Program
     {
-        class Program
+        static void Main(string[] args)
+
         {
-            static void Main(string[] args)
+            Start:
+            //WordBank and word to guess picked at random
+            string[] wordBank = { "Black", "Blue", "Yellow", "Orange" };
 
+            Random ran = new Random();
+            string wordToGuess = wordBank[ran.Next(0, wordBank.Length)];
+            string wordToGuessUpper = wordToGuess.ToUpper();
+           
+            //Putting random word into an array
+            char [] wordToGuessUpperArray = new char[wordToGuessUpper.Length];
+            for (int i = 0; i < wordToGuessUpper.Length; i++)
+                wordToGuessUpperArray[i] = '-';
+
+
+            //Test word delete afer
+            Console.WriteLine(wordToGuessUpper);
+
+            //Welcome Screen
+            Console.WriteLine(
+            "888                                                           " + '\n' +
+            "888                                                           " + '\n' +
+            "888                                                           " + '\n' +
+            "88888b.  8888b. 88888b.  .d88b. 88888b.d88b.  8888b. 88888b.  " + '\n' +
+            "888 \"88b    \"88b888 \"88bd88P\"88b888 \"888 \"88b    \"88b888 \"88b " + '\n' +
+            "888  888.d888888888  888888  888888  888  888.d888888888  888 " + '\n' +
+            "888  888888  888888  888Y88b 888888  888  888888  888888  888 " + '\n' +
+            "888  888\"Y888888888  888 \"Y88888888  888  888\"Y888888888  888 " + '\n' +
+            "                             888                              " + '\n' +
+            "                        Y8b d88P                              " + '\n' +
+            "                        \"Y88P\"\"                            " + '\n'
+                        + '\n' + '\n' + "Press ENTER to countinue.");
+            Console.ReadLine();
+            Console.Clear();
+            //Game Enviorment
+
+
+            int lives = 6;
+            bool won = false;
+            int letterRevealed = 0;
+            int frames = 1;
+            string input;
+            char guess;
+
+            List<char> correctGuesses = new List<char>();
+            List<char> incorrectGuesses = new List<char>();
+            string[] aliveFrames =
             {
-                //WordBank and word to guess picked at random
-                string[] wordBank = { "Black", "Blue", "Yellow", "Orange" };
-
-                Random ran = new Random();
-                string wordToGuess = wordBank[ran.Next(0, wordBank.Length)];
-                string wordToGuessUppercase = wordToGuess.ToUpper();
-
-                //Displaying underscore of random word
-                StringBuilder displayToPlayer = new StringBuilder(wordToGuess.Length);
-                for (int i = 0; i < wordToGuess.Length; i++)
-                    displayToPlayer.Append("_ ");
-
-                //Test word delete afer
-                Console.WriteLine(wordToGuessUppercase);
-
-                //Welcome Screen
-                Console.WriteLine(
-                "888                                                           " + '\n' +
-                "888                                                           " + '\n' +
-                "888                                                           " + '\n' +
-                "88888b.  8888b. 88888b.  .d88b. 88888b.d88b.  8888b. 88888b.  " + '\n' +
-                "888 \"88b    \"88b888 \"88bd88P\"88b888 \"888 \"88b    \"88b888 \"88b " + '\n' +
-                "888  888.d888888888  888888  888888  888  888.d888888888  888 " + '\n' +
-                "888  888888  888888  888Y88b 888888  888  888888  888888  888 " + '\n' +
-                "888  888\"Y888888888  888 \"Y88888888  888  888\"Y888888888  888 " + '\n' +
-                "                             888                              " + '\n' +
-                "                        Y8b d88P                              " + '\n' +
-                "                        \"Y88P\"\"                            " + '\n'
-                            + '\n' + '\n' + "Press ENTER to countinue.");
-                Console.ReadLine();
-                Console.Clear();
-                //Game Enviorment
-
-
-                int lives = 6;
-                bool won = false;
-                int letterRevealed = 0;
-                int frames = 7;
-                string input;
-                char guess;
-
-                List<char> correctGuesses = new List<char>();
-                List<char> incorrectGuesses = new List<char>();
-                string[] aliveFrames =
-                {
             #region Frames
             // 0
             @"      ╔═══╗   " + '\n' +
@@ -117,8 +122,8 @@ namespace Hangman_Final
             #endregion 
             };
 
-                string[] DeathAnimation =
-                {
+            string[] DeathAnimation =
+            {
             #region Frames
             @"      ╔═══╗   " + '\n' +
             @"      |   ║   " + '\n' +
@@ -260,87 +265,106 @@ namespace Hangman_Final
             #endregion
             };
 
-                //WelcomeFrame
-                Console.WriteLine("You find yourself at the end of your rope." + '\n' + '\n' + "'Guess it's your lucky day.'" + '\n');
-                Console.WriteLine(aliveFrames[0]);
-                Console.WriteLine(displayToPlayer);
-                Console.WriteLine("'Guess the word, and you're free.'");
-                Console.WriteLine("Enter a letter...");
+            //WelcomeFrame
+            Console.WriteLine("You find yourself at the end of your rope." + '\n' + '\n' + "'Guess it's your lucky day.'" + '\n');
+            Console.WriteLine(aliveFrames[0]);
+            foreach(char letter in wordToGuessUpperArray)
+            {
+                Console.Write("-");
+            }
+            Console.WriteLine();
+            Console.WriteLine("'Guess the word, and you're free.'");
+            Console.WriteLine("Enter a letter...");
 
-                //Game Logic
+            //Game Logic
 
-                while (!won && lives > 0)
+            while (!won && lives > 0)
+            {
+                HandleException:
+                try
                 {
                     input = Console.ReadLine().ToUpper();
                     guess = input[0];
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("'I may not know how to read but I know that's not a letter'");
+                    Console.WriteLine("Please enter a valid letter.");
+                    
+                    throw;
+                }
 
-                    //If right or wrong answer was entered twice
-                    if (correctGuesses.Contains(guess))
-                    {
-                        Console.WriteLine("You've already tried '{0}' and it was right!", guess);
-                        continue;
-                    }
+                //If right or wrong answer was entered twice
+                if (correctGuesses.Contains(guess))
+                {
+                    Console.WriteLine("You've already tried '{0}' and it was right!", guess);
+                    continue;
+                }
 
-                    else if (incorrectGuesses.Contains(guess))
-                    {
-                        Console.WriteLine("You've already tried '{0}' and it was wrong!", guess);
-                        continue;
+                else if (incorrectGuesses.Contains(guess))
+                {
+                    Console.WriteLine("You've already tried '{0}' and it was wrong!", guess);
+                    continue;
 
-                    }
+                }
 
-                    //Right answer and win condition
-                    if (wordToGuessUppercase.Contains(guess))
-                    {
-                    Console.Clear();
+                //Right letter guessed
+                if (wordToGuessUpper.Contains(guess))
+                {
                     correctGuesses.Add(guess);
 
-                        for (int i = 0; i < wordToGuess.Length; i++)
+                    for (int i = 0; i < wordToGuessUpper.Length; i++)
+                    {
+                        if (wordToGuessUpper[i] == guess)
                         {
-                            if (wordToGuessUppercase[i] == guess)
-                            {
                             Console.Clear();
-                            //displayToPlayer.Remove(i, i);  trying to replace _ with the letter -- revealed closer
-                            //displayToPlayer.Replace(displayToPlayer[i], wordToGuess[i]); -- not close
-                            /*string reveal = Convert.ToString(wordToGuess[i]);
-                            displayToPlayer.AppendFormat(reveal); Nope */
-                            displayToPlayer.Remove(i, 0);
-                            displayToPlayer[i] = wordToGuess[i];
+
+                            wordToGuessUpperArray[i] = wordToGuessUpper[i];
                             letterRevealed++;
                             Console.WriteLine("Good guess. Keep it coming.");
-                            Console.WriteLine(aliveFrames[frames-lives]);
+                            Console.WriteLine(aliveFrames[frames]);
 
-                                //Win
+                        }
+                        if (letterRevealed == wordToGuess.Length)
+                        {
+                            won = true;
+                            Console.WriteLine("You live to see another day.");
 
-                                if (letterRevealed == wordToGuessUppercase.Length)
-                                {
-                                    won = true;
-                                    Console.WriteLine("You live to see another day.");
-                                }
-                            }
                         }
                     }
+                }
 
-                    //Wrong guess and lose condition
-                    else
-                    {
+                //Wrong letter guessed
+                else
+                {
                     Console.Clear();
                     incorrectGuesses.Add(guess);
                     lives--;
-                        Console.WriteLine(aliveFrames[frames - lives]);
-                        Console.WriteLine("You feel the rope around your neck get tighter.");
+                    frames++;
+                    Console.WriteLine(aliveFrames[frames]);
+                    Console.WriteLine("You feel the rope around your neck get tighter.");
 
-
-                        if (lives == 0)
+                    if (lives == 0)
+                    {
+                        for (int i = 0; i < DeathAnimation.Length; i++)
                         {
-                            //DEATHANIMATION
-
-                            Console.WriteLine("The world goes dark...");
+                            Console.SetCursorPosition(4, 3);
+                            Console.WriteLine(DeathAnimation[i]);
+                            Thread.Sleep(TimeSpan.FromMilliseconds(150));
                         }
+                            
+
+                        Console.WriteLine("The world goes dark...");
+                        break;
                     }
-                    Console.WriteLine(displayToPlayer.ToString());
                 }
+
+                Console.WriteLine(wordToGuessUpperArray);
             }
+            
         }
     }
+}
+
 
 
