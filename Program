@@ -50,10 +50,10 @@ namespace Hangman_Final
             //Game Enviorment
 
 
-            int lives = 6;
+            int lives = 5;
             bool won = false;
             int letterRevealed = 0;
-            int frames = 1;
+            int frames = 0;
             string input;
             char guess;
 
@@ -130,7 +130,7 @@ namespace Hangman_Final
             @"      O   ║   " + '\n' +
             @"     /|\  ║   " + '\n' +
             @"     / \  ║   " + '\n' +
-            @"     ██  ║   " + '\n' +
+            @"     ██   ║   " + '\n' +
             @"    ══════╩═══",
             //
             @"      ╔═══╗   " + '\n' +
@@ -327,8 +327,11 @@ namespace Hangman_Final
                         }
                         if (letterRevealed == wordToGuess.Length)
                         {
+                            Console.Clear();
+                            Console.WriteLine(aliveFrames[frames]);
                             won = true;
                             Console.WriteLine("You live to see another day.");
+                            Console.WriteLine("You win!");
 
                         }
                     }
@@ -348,6 +351,7 @@ namespace Hangman_Final
                     {
                         for (int i = 0; i < DeathAnimation.Length; i++)
                         {
+                            Console.Clear();
                             Console.SetCursorPosition(4, 3);
                             Console.WriteLine(DeathAnimation[i]);
                             Thread.Sleep(TimeSpan.FromMilliseconds(150));
@@ -355,6 +359,7 @@ namespace Hangman_Final
                             
 
                         Console.WriteLine("The world goes dark...");
+                        Console.WriteLine("You lose!");
                         break;
                     }
                 }
@@ -365,6 +370,3 @@ namespace Hangman_Final
         }
     }
 }
-
-
-
